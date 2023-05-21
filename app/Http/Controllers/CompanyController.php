@@ -7,6 +7,7 @@ use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
@@ -22,10 +23,11 @@ class CompanyController extends Controller
      *
      * @return AnonymousResourceCollection
      */
-    public function index(Request $request)
+    public function index()
     {
         //
-        return CompanyResource::collection(Company::paginate());
+        $companies = Company::with('user')->paginate();
+        return CompanyResource::collection($companies);
 
     }
 
@@ -33,7 +35,7 @@ class CompanyController extends Controller
      * Store a newly created resource in storage.
      *
      * @param StoreCompanyRequest $request
-     * @return Response
+     * @return JsonResponse
      */
     public function store(StoreCompanyRequest $request)
     {
@@ -47,12 +49,14 @@ class CompanyController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response((['error' => $validator->errors(), 'status'=> 404]));
+            return response()->json(['error' => $validator->errors()], 404);
         }else{
             $data = $request->all();
             $data['user_id'] = $request->user()->id;
             $data['company_industry'] = implode(',', $request['company_industry']);
-            return Company::create($data);
+            $company = Company::create($data);
+            $company->load('user');
+            return response()->json($company, 201);
         }
     }
 

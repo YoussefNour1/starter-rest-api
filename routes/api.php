@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BusinessServiceController;
 use App\Http\Controllers\CompanyController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+Route::get('/companies/all', [CompanyController::class, 'index']);
 
 Route::middleware(['auth:sanctum'])->group(function (){
     Route::post('companies/{company}/update', [CompanyController::class, 'upload']);
@@ -30,3 +32,15 @@ Route::middleware(['auth:sanctum'])->group(function (){
 
 Route::post('/users/register', [AuthController::class, 'register']);
 Route::post('/users/login', [AuthController::class, 'login']);
+Route::get('/search', [BusinessServiceController::class, 'search']);
+
+Route::group(['prefix' => 'services'], function () {
+    Route::get('/', [BusinessServiceController::class, 'index']);
+    Route::post('/', [BusinessServiceController::class, 'store']);
+    Route::get('/{id}', [BusinessServiceController::class, 'show']);
+    Route::match(['put', 'patch'], '/{id}', [BusinessServiceController::class, 'update']); //('/{id}', [BusinessServiceController::class, 'update']);
+    Route::delete('/{id}', [BusinessServiceController::class, 'destroy']);
+
+    // Search business services
+
+});
